@@ -8,7 +8,7 @@
 
 int yyerror (char *s);
 int yylex ();
-
+ 
 %}
 %union{
     double val;
@@ -17,16 +17,16 @@ int yylex ();
 
 /*Declaración de YACC*/
 %token <val> NUMBER
-%type <vec> exp 
+%type <vec> exp
 %type <vec> vector
 %type <val> number
 %left '+' '-'
-%left '*'  
+%left '*'
 %left 'x' 'o'
 
 
 /*Gramatica*/
-%% 
+%%
 input: /*Cadena vacia*/
            |input list
            ;
@@ -35,7 +35,7 @@ list: '\n'
         | exp '\n'  { imprimeVector($1); }
         | number '\n' {printf("%lf\n", $1);}
         ;
-        
+
 exp:  vector
         | exp '+' exp {$$ = sumaVector($1,$3); }
         | exp '-' exp  {$$ = restaVector($1,$3); }
@@ -44,12 +44,12 @@ exp:  vector
         | exp 'x' exp {$$ = productoCruz($1, $3); }
         ;
 
-number: NUMBER 
+number: NUMBER
         | vector 'o' vector {$$ = productoPunto($1,$3);}
         | '|' vector '|' {$$ = magnitudVector($2); }
         ;
-        
-vector : '[' NUMBER NUMBER NUMBER ']' {Vector *v = creaVector(3);  
+
+vector : '[' NUMBER NUMBER NUMBER ']' {Vector *v = creaVector(3);
                                                                                      v->vec[0] = $2;
                                                                                      v->vec[1] = $3;
                                                                                      v->vec[2] = $4;
@@ -59,26 +59,22 @@ vector : '[' NUMBER NUMBER NUMBER ']' {Vector *v = creaVector(3);
 
 int yylex (){
   	int c;
-  	while ((c = getchar ()) == ' ' || c == '\t')  
+  	while ((c = getchar ()) == ' ' || c == '\t')
   		;
- 	if (c == EOF)                            
+ 	if (c == EOF)
     		return 0;
   	if (c == '.' || isdigit (c)){
       		ungetc (c, stdin);
       		scanf ("%lf", &yylval.val);
 	      	return NUMBER;
     	}
-  	return c;                                
+  	return c;
 }
 
-void main() { 
-   yyparse(); 
+void main() {
+   yyparse();
 }
-int yyerror(char *s) { 
-  printf("%s\n", s); 
-  return 0; 
+int yyerror(char *s) {
+  printf("%s\n", s);
+  return 0;
 }
-
-
-
-

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 struct vector{
 	char name;
@@ -21,5 +22,5 @@ double magnitudVector(Vector *a);
 
 /* ======= PRACTICA 03 ====== */
 void actualizaValor(char var, Vector * a);
-vector * obtenValor(char var);
+Vector * obtenValor(char var);
 int obtenID(char var);

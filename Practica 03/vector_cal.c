@@ -113,7 +113,7 @@ Vector * cubeta[MAX];
         }
 
     int obtenID(char var){
-      if ( 'A' <= var && var <= 'Z' ) {
+      if ( 'A' <= var && var <= 'Z' )
         return ( var - 'A' );
       return ( var - 'a' + ASCII );
     }
@@ -126,6 +126,6 @@ Vector * cubeta[MAX];
     }
 
     void actualizaValor(char var, Vector * a){
-      ind ID = obtenID(var);
+      int ID = obtenID(var);
       cubeta[ ID ] = a;
     }

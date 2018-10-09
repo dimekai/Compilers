@@ -45,23 +45,30 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    NUMBER = 258
+    NUMBER = 258,
+    VAR = 259,
+    INDEF = 260,
+    UNARYMINUS = 261
   };
 #endif
 /* Tokens.  */
 #define NUMBER 258
+#define VAR 259
+#define INDEF 260
+#define UNARYMINUS 261
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 
 union YYSTYPE
 {
-#line 13 "vector_cal.y" /* yacc.c:1910  */
+#line 14 "vector.y" /* yacc.c:1910  */
 
-    double val;
-    Vector *vec;
+  double num;
+  Vector * val;
+  Symbol * sym;
 
-#line 65 "y.tab.h" /* yacc.c:1910  */
+#line 72 "y.tab.h" /* yacc.c:1910  */
 };
 
 typedef union YYSTYPE YYSTYPE;

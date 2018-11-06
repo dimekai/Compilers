@@ -148,7 +148,7 @@ void printd( ){       /* Se saca el valor del tope de la pila y se imprime */
     Datum d;
     d = pop();
 
-    printf("%lf",d.num);
+    printf("%lf\n",d.num);
 }
 
 Inst *code(Inst f){    /* Recibe una instruccion u operando y la guarda en la RAM */

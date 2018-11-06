@@ -4,71 +4,75 @@
   #include <string.h>
   #define MSDOS
 
+  /* Macros con parametros */
+  #define code2(c1, c2)     code(c1); code(c2);
+  #define code3(c1, c2, c3) code(c1); code(c2); code(c3);
+
   int yylex();
   void yyerror(char * s);
   void warning(char * s, char * t);
   void execerror(char * s, char * t);
   void fpecatch();
+  extern void init();
+  
 %}
 
 %union{
   double num;
   Vector * val;
+  Inst * inst;      /* Instrucciones a ejecutar por la RAM*/
   Symbol * sym;
 }
 
 /* Declaración de YACC*/
 %token <num> NUMBER
-%token <sym> VAR INDEF
-%type <val> vector
+%token <sym> VAR INDEF VECT NUMB
+%type <sym> vector numero
 %type <val> expr asgn
-%type <num> number
+%type <num> escalar
 
 %right '='
 %left '+' '-'
-%left '*'
-%left UNARYMINUS
-%left ':' '#'
-%right '^'
+%left '*' ':' '#' '|'
 
 /*Seccion de Reglas Gramaticales y Acciones*/
 %%
   list:
     | list '\n'
-    | list asgn '\n'
-    | list expr '\n' { imprimeVector($2); }
-    | list number '\n' { printf("\t%.8g\n", $2); }
+    | list asgn '\n' { code2(pop, STOP); return 1; }
+    | list expr '\n' { code2(print, STOP); return 1; }
+    | list escalar '\n' { code2(printd, STOP) return 1; }
     | list error '\n' { yyerror; }
     ;
 
-  asgn: VAR '=' expr { $$ = $1->u.val = $3;
-                       $1->type = VAR; }
+  asgn: VAR '=' expr { code3(varpush, (Inst)$1, assign); }
     ;
 
-  expr: vector { $$ = $1; }
-    | VAR { if( $1->type == INDEF )
-              execerror("Variable no definida", $1->name);
-            $$ = $1->u.val;
-          }
+  expr: vector { code2(constpush, (Inst)$1); }
+    | VAR { code3(varpush, (Inst)$1, eval); }
     | asgn
-    | expr '+' expr { $$ = sumaVector ( $1, $3 ); }
-    | expr '-' expr { $$ = restaVector( $1, $3 ); }
-    | NUMBER '*' expr { $$ = escalarVector( $1, $3 ); }
-    | expr '*' NUMBER { $$ = escalarVector( $3, $1 ); }
-    | expr '#' expr { $$ = productoCruz( $1, $3 ); }
+    | expr '+' expr { code(add); }
+    | expr '-' expr { code(sub); }
+    | escalar '*' expr { code(escalar); }
+    | expr '*' escalar { code(escalar); }
+    | expr '#' expr { code(producto_cruz); }
     ;
 
-  number: NUMBER
-    | expr ':' expr { $$ = productoPunto( $1, $3 ); }
-    | '|' expr '|' { $$ = magnitudVector( $2 ); }
+  escalar: numero   { code2(constpushd, (Inst)$1); }
+    | expr ':' expr { code(producto_punto); }
+    | '|' expr '|'  { code(magnitud); }
     ;
 
-  vector: '[' NUMBER NUMBER NUMBER ']' { $$ = creaVector(3);
-                                         $$->vec[0] = $2;
-                                         $$->vec[1] = $3;
-                                         $$->vec[2] = $4;
+  vector: '[' NUMBER NUMBER NUMBER ']' { Vector * vector1 = creaVector(3);
+                                         vector1->vec[0] = $2;
+                                         vector1->vec[1] = $3;
+                                         vector1->vec[2] = $4;
+                                         $$ = install("", VECT , vector1);
                                        }
     ;
+    
+  numero: NUMBER { $$ = installd("", NUMB, $1); }
+
 %%
 
 #include <stdio.h>
@@ -84,7 +88,8 @@ void main(int argc, char * argv[]) {
     progname = argv[0];
     setjmp(begin);
     signal(SIGFPE, fpecatch);
-    yyparse();
+    for(initcode(); yyparse (); initcode())
+		execute(prog);
 }
 
 void execerror(char * s, char * t){
@@ -104,6 +109,7 @@ int yylex(){
       return 0;
 
     if (c == '.' || isdigit(c) ) {
+        double d;
         ungetc(c, stdin);
         scanf("%lf\n", &yylval.num);
         return NUMBER;
@@ -130,10 +136,13 @@ int yylex(){
             return s->type;
         }
     }
+
+    if( c == '\n')  lineno++;
+
     return c;
 }
 
-void yyerror(char * s){
+void yyerror(char * s){     /* Llamada por yyparse ante un error */
   warning(s, (char *)0);
 }
 

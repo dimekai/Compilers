@@ -1,4 +1,4 @@
-#include "hoc.h"
+#include "hoc.h" 
 #include "y.tab.h"
 #define NSTACK 256 
 static Datum stack[NSTACK];     /* Pila */
@@ -15,14 +15,16 @@ void initcode(){
                            elemento del arreglo. */
 }
 
-void push(Datum d){     /* Se mete d en la pila*/
+void push(d)
+    Datum d;
+{     /* Se mete d en la pila*/
     if( stackp >= &stack[NSTACK] )
         execerror("stack overflow", (char *) 0);
     *stackp++ = d;
 }
 
 Datum pop(){            /* Sacar y retornar de la pila el elemento */
-    if( stackp <= stack[] )
+    if( stackp <= stack )
         execerror("stack underflow", (char *) 0);
     return *--stackp;
 }
@@ -36,7 +38,7 @@ void constpush(){       /* Meter una constante en la pila*/
 
 void constpushd(){       /* Meter una constante en la pila*/
     Datum d;
-    d.num = ((Symbol *)*pc++)->u.num;   /* Apunta a la entarda de 
+    d.num = ((Symbol  *)*pc++)->u.num;   /* Apunta a la entarda de 
                                            la tabla de simbolos */
     push(d);
 }
@@ -44,12 +46,12 @@ void constpushd(){       /* Meter una constante en la pila*/
 void varpush(){     /* Meter una variable a la pila */
     Datum d;        /* Los elementos de la maquina virtual 
                        de la pila son de tipo Datum */
-    d.sym = (Symbol *)(*pc++);  /* Convertirmos a Symbol, lo guardamos
+    d.sym = (Symbol  *)(*pc++);  /* Convertirmos a Symbol, lo guardamos
                                    en .sym y lo metemos en la pila */
     push(d);
 }
 
-void eval(){
+void eval( ){
     Datum d;
     d = pop();
     if( d.sym->type == INDEF )
@@ -65,7 +67,7 @@ void add(){
     d2 = pop();
     d1 = pop();
 
-    d1.val = sumaVector( d1.val, d2.val ); 
+    d1.val = sumaVector(d1.val, d2.val); 
     push(d1);
 }
 
@@ -74,7 +76,7 @@ void sub(){
     d2 = pop();
     d1 = pop();
 
-    d1.val = restaVector( d1.val, d2.val );
+    d1.val = restaVector(d1.val, d2.val);
 
     push(d1);
 }
@@ -84,29 +86,29 @@ void escalar(){
     d2 = pop();
     d1 = pop();
 
-    d1.val = escalarVector( d1.val, d2.val );
+    d1.val = escalarVector(d1.num, d2.val);
     push(d1);
 }
 
-void producto_punto(){
+void producto_punto( ){
     Datum d1, d2;
     double d3;
     
     d2 = pop();
     d1 = pop();
 
-    d3 = productoPunto( d1.val, d2.val );
+    d3 = productoPunto(d1.val, d2.val);
 
-    push( (Datum) d3);
+    push((Datum)d3);
 }
 
-void producto_cruz(){
+void producto_cruz( ){
     Datum d1, d2;
 
     d2 = pop();
     d1 = pop();
 
-    d1.val = productoCruz( d1.val, d2.val );
+    d1.val = productoCruz(d1.val, d2.val);
 
     push(d1);
 }
@@ -116,17 +118,17 @@ void magnitud(){
 
     d1 = pop();
 
-    d1.num = magnitudVector( d1.val );
+    d1.num = magnitudVector(d1.val);
 
     push(d1);
 }
 
-void assign(){      /* Asigna el valor superior al siguiente valor */
+void assign( ){      /* Asigna el valor superior al siguiente valor */
     Datum d1, d2;
     d1 = pop();
     d2 = pop();
 
-    if( d1.sym->type != VAR && d1.sym->type != INDEF )
+    if(d1.sym->type != VAR && d1.sym->type != INDEF)
         execerror("assignment to non-variable", d1.sym->name);
 
     d1.sym->u.val = d2.val;
@@ -135,23 +137,23 @@ void assign(){      /* Asigna el valor superior al siguiente valor */
     push(d2);
 }
 
-void print(){       /* Se saca el valor del tope de la pila y se imprime */
+void print( ){       /* Se saca el valor del tope de la pila y se imprime */
     Datum d;
     d = pop();
 
     imprimeVector(d.val);
 }
 
-void printd(){       /* Se saca el valor del tope de la pila y se imprime */
+void printd( ){       /* Se saca el valor del tope de la pila y se imprime */
     Datum d;
     d = pop();
 
     printf("%lf",d.num);
 }
 
-Inst *code( Inst f){    /* Recibe una instruccion u operando y la guarda en la RAM */
+Inst *code(Inst f){    /* Recibe una instruccion u operando y la guarda en la RAM */
     Inst *oprogp = progp;    //EL valor actual se guarda en oprogp
-    if (progp >= &prog[ NPROG ])    //Verifica si hay espacio en la RAM
+    if (progp >= &prog [ NPROG ])    //Verifica si hay espacio en la RAM
 		execerror("program too big", (char *) 0);
     *progp++ = f;           /* La instruccion f se guarda en la RAM 
                                y avanzamos progp*/
@@ -159,7 +161,8 @@ Inst *code( Inst f){    /* Recibe una instruccion u operando y la guarda en la R
 }
 
 void execute( Inst p){      /*Ejecuta instrucciones de la máquina/RAM */
-    for( pc = p; *p != STOP; ) /*Especificamos donde inicia la ejecución y se
+    for( pc = p; *pc != STOP; ) /*Especificamos donde inicia la ejecución y se
                                  detiene en donde haya un STOP */
-        (*pc++)();              /*Ejecutamos una función */
+        (*(*pc++))();              /*Ejecutamos una función */
+    
 }

@@ -12,7 +12,7 @@ struct vector{
 typedef struct vector Vector;
 Vector *creaVector(int n);
 void imprimeVector(Vector *a);
-Vector *copiaVector(Vector *a);
+void copiaVector(Vector *a, Vector * copy);		/* Modificado en Practica 04 */
 Vector *sumaVector(Vector *a, Vector *b);
 Vector *restaVector(Vector *a, Vector *b);
 Vector *escalarVector(double escalar, Vector *a);

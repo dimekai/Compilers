@@ -1,8 +1,8 @@
-#include <stdio.h>
 #include "vector_cal.h"
-#include <ctype.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include <string.h>
+
 #define MAX 102
 #define ASCII 26
 
@@ -30,13 +30,13 @@ Vector * cubeta[MAX];
     }
 
     /*--- Copiar un vector ---*/
-    Vector *copiaVector(Vector *v){
+    void copiaVector(Vector * v, Vector * copy){
         int i = 0;
-        Vector * copy = creaVector(v->n);
+        copy = creaVector(v->n);
         for( ; i < v->n ; i++)
             copy->vec[i] = v->vec[i];
 
-        return copy;
+        //return copy;
     }
 
     /*---- Operaciones con vectores ----*/

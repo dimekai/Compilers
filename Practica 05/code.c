@@ -161,6 +161,85 @@ void magnitud(){
     push(d1);
 }
 
+/* Operadores condicionales Aritméticos */
+void gt(){      /* Grater than: > */
+    Datum d1, d2;
+    d2 = pop();
+    d1 = pop();
+    d1.eval = (int)( magnitudVector(d1.val) > magnitudVector(d2.val) );
+    push(d1);
+}
+
+void lt(){      /* Less than: < */
+    Datum d1, d2;
+    d2 = pop();
+    d1 = pop();
+    d1.eval = (int)( magnitudVector(d1.val) < magnitudVector(d2.val) );
+    push(d1);
+}
+
+void ge(){      /* Grater or equals than: >= */
+    Datum d1, d2;
+    d2 = pop();
+    d1 = pop();
+    d1.eval = (int)( magnitudVector(d1.val) >= magnitudVector(d2.val) );
+    push(d1);
+}
+
+void le(){      /* Less or equals than: < */
+    Datum d1, d2;
+    d2 = pop();
+    d1 = pop();
+    d1.eval = (int)( magnitudVector(d1.val) <= magnitudVector(d2.val) );
+    push(d1);
+}
+
+void eq(){      /* Equals than: < */
+    Datum d1, d2;
+    d2 = pop();
+    d1 = pop();
+    d1.eval = (int)( magnitudVector(d1.val) == magnitudVector(d2.val) );
+    push(d1);
+}
+
+void ne(){      /* Not Equals than: < */
+    Datum d1, d2;
+    d2 = pop();
+    d1 = pop();
+    d1.eval = (int)( magnitudVector(d1.val) != magnitudVector(d2.val) );
+    push(d1);
+}
+
+/* Operadores condicionales lógicos */
+void and(){
+    Datum d1, d2;
+    d2 = pop();
+    d1 = pop();
+    int first_vector = (int)(magnitudVector(d1.val) != (double)0.0);
+    int secnd_vector = (int)(magnitudVector(d2.val) != (double)0.0);
+
+    d1.eval = (int)(first_vector && secnd_vector);
+    push(d1);
+}   
+
+void or(){
+    Datum d1, d2;
+    d2 = pop();
+    d1 = pop();
+    int first_vector = (int)(magnitudVector(d1.val) != (double)0.0);
+    int secnd_vector = (int)(magnitudVector(d2.val) != (double)0.0);
+
+    d1.eval = (int)(first_vector || secnd_vector);
+    push(d1);
+}
+
+void not(){
+    Datum d;
+    d = pop();
+    d.eval = (int)(magnitudVector(d.val) == (double)0.0); //null
+    push(d);
+}
+
 void assign( ){      /* Asigna el valor superior al siguiente valor */
     Datum d1, d2;
     d1 = pop();

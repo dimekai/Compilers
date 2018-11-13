@@ -1,7 +1,7 @@
 import java.awt.*;
 import java.awt.image.*;
 import java.util.*;
-
+     
 class Filtradora {
    private BufferedImage foto;
    private Hashtable mOps;
@@ -15,5 +15,3 @@ class Filtradora {
    }
    public BufferedImage getFoto(){  return foto; }
 }
-
- 

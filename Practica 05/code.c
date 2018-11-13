@@ -51,6 +51,44 @@ void varpush(){     /* Meter una variable a la pila */
     push(d);
 }
 
+/* PRACTICA 05 se agrega */
+void bltin(){   /*Evaluar un predefinido en el tope de la pila */
+    Datum d;
+    d = pop();
+    d.val = (*(Vector * (*)() )(*pc++))(d.val);
+    push(d);
+}
+
+/* Ciclo WHILE */
+void whilecode(){
+    Datum d;
+    Inst * savepc = pc;     /* Cuerpo de la iteración */
+    execute(savepc + 2);    /* Condición */
+    d = pop();
+
+    while(d.val){
+        execute(* ( (Inst **)(savepc) ));   /* Cuerpo del ciclo*/
+        execute(savepc + 2);
+        d = pop();
+    }
+
+    pc = *((Inst **)(savepc + 1));  /*Vamos a la siguiente posicion*/
+}
+
+/* Condición IF */
+void ifcode(){
+    Datum d;
+    Inst * savepc = pc;     /* Parte 'then' */
+    execute(savepc + 3);
+    d = pop();
+    if(d.val);
+        execute(*((Inst **)(savepc)));
+    else if(*((Inst **)(savepc + 1)));      /*Parte del else*/
+        execute(*((Inst **)(savepc + 1)));
+
+    pc = *((Inst **)(savepc + 2));  /*Vamos a la siguiente posicion de la pila*/
+}
+
 void eval( ){
     Datum d;
     d = pop();

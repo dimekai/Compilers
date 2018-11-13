@@ -22,40 +22,92 @@
   Vector * val;
   Inst * inst;      /* Instrucciones a ejecutar por la RAM*/
   Symbol * sym;
+  int eval;
 }
 
 /* Declaración de YACC*/
 %token <num> NUMBER
-%token <sym> VAR INDEF VECT NUMB
+%token <sym> VAR INDEF VECT NUMB PRINT WHILE IF ELSE BLTIN
+%type <inst> stmt asgn expr stmtlist cond while if end
 %type <sym> vector numero
-%type <val> expr asgn
 %type <num> escalar
 
 %right '='
+%left OR AND
+%left GT GE LT LE EQ NE
 %left '+' '-'
 %left '*' ':' '#' '|'
+%left UNARYMINUS NOT 
 
 /*Seccion de Reglas Gramaticales y Acciones*/
 %%
   list:
     | list '\n'
     | list asgn '\n' { code2(pop, STOP); return 1; }
+    | list stmt '\n' { code(STOP); return 1; }
     | list expr '\n' { code2(print, STOP); return 1; }
     | list escalar '\n' { code2(printd, STOP) return 1; }
     | list error '\n' { yyerror; }
     ;
 
-  asgn: VAR '=' expr { code3(varpush, (Inst)$1, assign); }
+  asgn: VAR '=' expr { $$ = $3; code3(varpush, (Inst)$1, assign); }
     ;
+  
+  stmt: expr { code(pop); }
+    | PRINT expr    { code(print); $$ = $2; }
+    | while cond stmt end {
+            ($1)[1] = (Inst)$3; /* Cuerpo de la iteracion */ 
+            ($1)[2] = (Inst)$4; /*Termina si la condicion no se cumple */
+            }
+    | if cond stmt end {    /* Proposicion if*/
+            ($1)[1] = (Inst)$3;    /* Parte then */
+            ($1)[2] = (Inst)$4;    /* Termina si la condicion no se cumple */
+            }
+    | if cond stmt end ELSE stmt end {  /* Proposicion if-else */
+            ($1)[1] = (Inst)$3; /* Parte then */
+            ($1)[2] = (Inst)$6  /* Parte else */
+            ($1)[3] = (Inst)$7; /* Termina si las condiciones no se cumplen*/            
+            }
+    | '{' stmtlist '}'  { $$ = $2; }
+    ;
+
+  cond: '(' expr ')' { code(STOP); $$ = $2; }
+    ;
+
+  while: WHILE    { $$ = code3(whilecode, STOP, STOP); }
+    ;
+
+  if: IF  { $$ = code(ifcode); 
+              code3(STOP, STOP, STOP);
+            }
+    ;
+
+  end: /* Nada */ { code(STOP); $$ = progp; }
+    ;
+
+  stmtlist: /* Nada */	{ $$ = progp; }
+    | stmtlist '\n'
+	| stmtlist stmt
+	;
 
   expr: vector { code2(constpush, (Inst)$1); }
     | VAR { code3(varpush, (Inst)$1, eval); }
     | asgn
+    | BLTIN '(' expr ')' { $$ = $3; code2(bltin, (Inst)$1->u.ptr); }
     | expr '+' expr { code(add); }
     | expr '-' expr { code(sub); }
     | escalar '*' expr { code(escalar); }
     | expr '*' escalar { code(escalar); }
     | expr '#' expr { code(producto_cruz); }
+    | expr GT expr { code(gt); }
+    | expr LT expr { code(lt); }
+    | expr GE expr { code(ge); }
+    | expr LE expr { code(le); }
+    | expr EQ expr { code(eq); }
+    | expr NE expr { code(ne); }
+    | expr OR expr { code(or); }
+    | expr AND expr { code(and); }
+    | NOT expr { $$ = $2; code(not); }
     ;
 
   escalar: numero   { code2(constpushd, (Inst)$1); }
@@ -86,6 +138,7 @@ int lineno = 1;
 
 void main(int argc, char * argv[]) {
     progname = argv[0];
+    init();
     setjmp(begin);
     signal(SIGFPE, fpecatch);
     for(initcode(); yyparse (); initcode())
@@ -137,9 +190,29 @@ int yylex(){
         }
     }
 
+    switch(c){
+        case '>':   return follow('=', GE, GT);
+	    case '<':   return follow('=', LE, LT);
+        case '=':   return follow('=', EQ, '=');
+	    case '!':   return follow('=', NE, NOT);
+	    case '|':   return follow('|', OR, '|');
+	    case '&':   return follow('&', AND, '&');
+	    case '\n':  lineno++; return '\n';
+	    default:    return c;
+    }
+
     if( c == '\n')  lineno++;
 
     return c;
+}
+
+follow(expect,   ifyes,   ifno){  /*   buscar  operadores.   */
+    int c  = getchar();
+    if  (c  ==  expect)
+        return ifyes;
+    ungetc(c,   stdin);
+    
+    return  ifno;
 }
 
 void yyerror(char * s){     /* Llamada por yyparse ante un error */

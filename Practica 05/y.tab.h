@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.1.  */
+/* A Bison parser, made by GNU Bison 3.0.4.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -49,7 +49,22 @@ extern int yydebug;
     VAR = 259,
     INDEF = 260,
     VECT = 261,
-    NUMB = 262
+    NUMB = 262,
+    PRINT = 263,
+    WHILE = 264,
+    IF = 265,
+    ELSE = 266,
+    BLTIN = 267,
+    OR = 268,
+    AND = 269,
+    GT = 270,
+    GE = 271,
+    LT = 272,
+    LE = 273,
+    EQ = 274,
+    NE = 275,
+    UNARYMINUS = 276,
+    NOT = 277
   };
 #endif
 /* Tokens.  */
@@ -58,20 +73,36 @@ extern int yydebug;
 #define INDEF 260
 #define VECT 261
 #define NUMB 262
+#define PRINT 263
+#define WHILE 264
+#define IF 265
+#define ELSE 266
+#define BLTIN 267
+#define OR 268
+#define AND 269
+#define GT 270
+#define GE 271
+#define LT 272
+#define LE 273
+#define EQ 274
+#define NE 275
+#define UNARYMINUS 276
+#define NOT 277
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 
 union YYSTYPE
 {
-#line 20 "vector.y" /* yacc.c:1913  */
+#line 19 "vector.y" /* yacc.c:1909  */
 
-  double num;
-  Vector * val;
-  Inst * inst;      /* Instrucciones a ejecutar por la RAM*/
-  Symbol * sym;
+        Symbol *sym;
+	    Inst *inst;
+	    Vector *val;
+	    double num;
+        int eval;
 
-#line 75 "y.tab.h" /* yacc.c:1913  */
+#line 106 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

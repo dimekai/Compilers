@@ -78,10 +78,10 @@ void whilecode(){
 /* Condición IF */
 void ifcode(){
     Datum d;
-    Inst * savepc = pc;     /* Parte 'then' */
-    execute(savepc + 3);
+    Inst * savepc = pc;     /* Parte then */
+    execute(savepc + 3);    /*condicion*/
     d = pop();
-    if(d.val);
+    if(d.val)
         execute(*((Inst **)(savepc)));
     else if(*((Inst **)(savepc + 1)));      /*Parte del else*/
         execute(*((Inst **)(savepc + 1)));

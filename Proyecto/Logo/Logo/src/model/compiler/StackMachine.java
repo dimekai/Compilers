@@ -78,48 +78,48 @@ public class StackMachine {
     ||=====================================================||
     */
     private void add(){
-        Object matrixA = stack.pop();
-        Object matrixB = stack.pop();
+        Object matrixA = this.stack.pop();
+        Object matrixB = this.stack.pop();
         
-        stack.push( (double)matrixA + (double)matrixB );
+        this.stack.push( (double)matrixA + (double)matrixB );
     }
     
     private void sub(){
-        Object matrixA = stack.pop();
-        Object matrixB = stack.pop();
+        Object matrixA = this.stack.pop();
+        Object matrixB = this.stack.pop();
         
-        stack.push( (double)matrixA - (double)matrixB );
+        this.stack.push( (double)matrixA - (double)matrixB );
     }
     
     private void mult(){
-        Object matrixA = stack.pop();
-        Object matrixB = stack.pop();
+        Object matrixA = this.stack.pop();
+        Object matrixB = this.stack.pop();
         
-        stack.push( (double)matrixA * (double)matrixB );
+        this.stack.push( (double)matrixA * (double)matrixB );
     }
     
     private void negative(){
-        Object matrixA = stack.pop();
+        Object matrixA = this.stack.pop();
         System.out.println(matrixA);
-        stack.push(-(double)matrixA);
+        this.stack.push(-(double)matrixA);
     }
     
     private void constPush(){
-        stack.push(memory.get(++pc));
+        this.stack.push(this.memory.get(++this.pc));
     }
     
     private void varPush(){
-        stack.push(memory.get(++pc));
+        this.stack.push(this.memory.get(++this.pc));
     }
     
     private void varPush_eval(){
-        stack.push(table.found((String)memory.get(++pc)));
+        this.stack.push(this.table.found((String)this.memory.get(++this.pc)));
     }
     
     public void asign(){
-        String variable = (String)stack.pop();
-        Object object = stack.pop();
-        table.insert(variable, object);
+        String variable = (String)this.stack.pop();
+        Object object = this.stack.pop();
+        this.table.insert(variable, object);
     }
     
     /*
@@ -128,39 +128,62 @@ public class StackMachine {
     ||=========================||
     */
     private void EQ(){
-        Object B = stack.pop();
-        Object A = stack.pop();
-        stack.push( (double)A == (double)B );
+        Object B = this.stack.pop();
+        Object A = this.stack.pop();
+       this.stack.push( (double)A == (double)B );
     }
     
     private void NEQ(){
-        Object B = stack.pop();
-        Object A = stack.pop();
-        stack.push( (double)A != (double)B );
+        Object B = this.stack.pop();
+        Object A = this.stack.pop();
+        this.stack.push( (double)A != (double)B );
     }
     
     private void LT(){
-        Object B = stack.pop();
-        Object A = stack.pop();
-        stack.push( (double)A < (double)B );
+        Object B = this.stack.pop();
+        Object A = this.stack.pop();
+        this.stack.push( (double)A < (double)B );
     }
     
     private void GT(){
-        Object B = stack.pop();
-        Object A = stack.pop();
-        stack.push( (double)A > (double)B );
+        Object B = this.stack.pop();
+        Object A = this.stack.pop();
+        this.stack.push( (double)A > (double)B );
     }
     
     private void LET(){
-        Object B = stack.pop();
-        Object A = stack.pop();
-        stack.push( (double)A <= (double)B );
+        Object B = this.stack.pop();
+        Object A = this.stack.pop();
+        this.stack.push( (double)A <= (double)B );
     }
     
     private void GET(){
-        Object B = stack.pop();
-        Object A = stack.pop();
-        stack.push( (double)A >= (double)B );
+        Object B = this.stack.pop();
+        Object A = this.stack.pop();
+        this.stack.push( (double)A >= (double)B );
+    }
+    
+    /*
+    ||=========================||
+    ||    LOGICAL OPERATORS    ||
+    ||=========================||
+    */
+    
+    private void negate(){
+        Object A = this.stack.pop();
+        this.stack.push(! (boolean)A);
+    }
+    
+    private void AND(){
+        Object B = this.stack.pop();
+        Object A = this.stack.pop();
+        this.stack.push( (boolean)A && (boolean)B );
+    }
+    
+    private void OR(){
+        Object B = this.stack.pop();
+        Object A = this.stack.pop();
+        this.stack.push( (boolean)A || (boolean)B );
     }
     
 }

@@ -20,16 +20,16 @@ public class StackMachine {
     private boolean STOP = false;
     
     public StackMachine(TableSymbols table){
-        memory = new ArrayList<>();
-        stack = new Stack<>();
-        stackMarcos = new Stack<>();
-        currentConfig = new Initialize();
+        this.memory = new ArrayList<>();
+        this.stack = new Stack<>();
+        this.stackMarcos = new Stack<>();
+        this.currentConfig = new Initialize();
         this.pc = 0;
         this.table = table;
     }
     
     public int numberOfElements(){
-        return memory.size() + 1;
+        return this.memory.size() + 1;
     }
     
     /*
@@ -38,9 +38,9 @@ public class StackMachine {
     ||=======================================||
     */
     public int aggregateOperation(String name){
-        int position = memory.size();
+        int position = this.memory.size();
         try {
-            memory.add(this.getClass().getDeclaredMethod(name, null));
+            this.memory.add(this.getClass().getDeclaredMethod(name, null));
             return position;
         } catch (Exception e) {
             System.out.println("Error to add operation " + name + "\n");
@@ -50,19 +50,19 @@ public class StackMachine {
     }
     
     public int aggregate(Object object){
-        int position = memory.size();
-        memory.add(object);
+        int position = this.memory.size();
+        this.memory.add(object);
         return position;
     }
     
     public void aggregate(Object object, int position){
-        memory.remove(position);
-        memory.add(position,object);
+        this.memory.remove(position);
+        this.memory.add(position,object);
     }
     
     public int aggregateOperationIn(String name, int position){
         try {
-            memory.add(position, this.getClass().getDeclaredMethod(name, null));
+            this.memory.add(position, this.getClass().getDeclaredMethod(name, null));
         } catch (Exception e) {
             System.out.println("Error to add operation " + name 
                              + "in position "+ position +".\n");

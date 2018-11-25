@@ -378,4 +378,51 @@ public class StackMachine {
         int id = (int)this.memory.get(++this.pc);
         this.stack.push(this.stackMarcos.lastElement().getParameter(id - 1));
     }
+    
+    /*
+    ||=================================||
+    ||   PARTICULAR FUNCTION OF LOGO   ||
+    ||=================================||
+    */
+    
+    public static class Turn implements Function{
+
+        @Override
+        public void execute(Object A, ArrayList parameters) {
+            Initialize config = (Initialize)A;
+            int angle = ( config.getAngle() + (int)(double)parameters.get(ZERO))%RADIAN;
+            config.setAngle(angle);
+        }        
+    }
+    
+    public static class goForward implements Function{
+
+        @Override
+        public void execute(Object A, ArrayList parameters) {
+            Initialize config = (Initialize)A;
+            double Xi = config.getX();
+            double Yi = config.getY();
+            int angle = config.getAngle();
+            
+            double Xf = Xi + Math.cos(Math.toRadians(angle))*(double)parameters.get(0);
+            double Yf = Yi + Math.sin(Math.toRadians(angle))*(double)parameters.get(0);
+            
+            config.setPosition(Xf, Yf);
+            Line line = new Line((int)Xi, (int)Yi, 
+                                 (int)Xf, (int)Yf, config.getColor());
+            config.addLine(line);
+        }        
+    }
+    
+    public static class changeColor implements Function{
+
+        @Override
+        public void execute(Object A, ArrayList parameters) {
+            Initialize config = (Initialize)A;
+            config.setColor(new Color((int)(double)parameters.get(0)%RGB, 
+                                      (int)(double)parameters.get(1)%RGB, 
+                                      (int)(double)parameters.get(2)%RGB)
+                            );
+        }    
+    }
 }

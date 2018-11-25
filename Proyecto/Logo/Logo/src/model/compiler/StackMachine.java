@@ -390,7 +390,7 @@ public class StackMachine {
         @Override
         public void execute(Object A, ArrayList parameters) {
             Initialize config = (Initialize)A;
-            int angle = ( config.getAngle() + (int)(double)parameters.get(ZERO))%RADIAN;
+            int angle = ( config.getAngle() + (int)(double)parameters.get(0))%RADIAN;
             config.setAngle(angle);
         }        
     }

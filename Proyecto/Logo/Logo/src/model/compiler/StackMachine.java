@@ -380,12 +380,12 @@ public class StackMachine {
     }
     
     /*
-    ||=================================||
-    ||   PARTICULAR FUNCTION OF LOGO   ||
-    ||=================================||
+    ||==================================||
+    ||   PARTICULAR FUNCTIONS OF LOGO   ||
+    ||==================================||
     */
     
-    public static class Turn implements Function{
+    public static class turn implements Function{
 
         @Override
         public void execute(Object A, ArrayList parameters) {

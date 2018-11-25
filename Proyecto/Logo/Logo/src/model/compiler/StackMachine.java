@@ -266,5 +266,116 @@ public class StackMachine {
     public Initialize getConfiguration(){
         return this.currentConfig;
     }    
-   
+    
+    /*
+    ||==========================||
+    ||        STATEMENTS        ||
+    ||==========================||
+    */
+    private void stop(){
+        this.STOP = true;
+    }
+    
+    private void _return(){
+        this._return = true;
+    }
+    
+    private void nop(){}
+    
+    private void _while(){
+        int condition = this.pc;
+        boolean _continue = true;
+        while(_continue && !this._return){
+            execute(condition + 3);
+            if ((boolean)this.stack.pop()) { 
+                //Se lee el resultado de la condicion de la pila
+                // y se ejecuta el cuerpo
+                execute( (int)this.memory.get(condition + 1));
+            }else{
+                this.pc = (int)this.memory.get(condition + 2);
+                _continue = false;
+            }
+        }
+    }
+    
+    private void if_then_else(){
+        int condition = this.pc;
+        execute(condition + 4);
+        boolean res = true;
+        try {
+            res = (boolean)this.stack.pop();
+        } catch (Exception e) {
+            System.out.println("Error to pop on stack.");
+            System.out.println(e.getCause());
+        }
+        if (res) //Se lee el resultado de la condicion de la pila
+            execute( (int)this.memory.get(condition + 1) ); //Ejecuta el cuerpo
+        else
+            execute( (int)this.memory.get(condition + 2) );
+        
+        this.pc = (int)this.memory.get(condition + 3) - 1;
+        //El -1 es para corregir el aumento del pc al final de cada instrucción
+    }
+    
+    private void _for(){
+        int condition = this.pc;
+        execute(condition + 5); // Se ejecuta la primera parte
+        boolean _continue = true;
+        
+        while(_continue && !this._return){
+            execute( (int)this.memory.get(condition + 1) ); //Evaluamos condicion
+            if ( (boolean)this.stack.pop() ) {      //Lee el resultado de la condicion de la pila
+                execute( (int)this.memory.get(condition + 3) ); //Ejecuta el cuerpo
+                execute( (int)this.memory.get(condition + 2) );//Ejecuta la ultima parte del for
+            }else{
+                this.pc = (int)this.memory.get(condition + 4);
+                _continue = false;
+            }
+        }
+    }
+    
+    private void statement(){
+        this.table.insert((String)this.memory.get(++this.pc), ++this.pc); //Apuntamos a la primer instrucción de la función
+        int invoked = 0;
+        /*Se lleva al pc hasta la siguiente 
+        instruccion después de la declaracion */
+        while(this.memory.get(this.pc) != null || invoked != 0){
+            if (this.memory.get(this.pc) instanceof Method)
+                if (((Method)this.memory.get(this.pc)).getName().endsWith("invocar")) 
+                    invoked++;
+            if (this.memory.get(this.pc) instanceof Function)
+                invoked++;
+            if (this.memory.get(this.pc) == null)
+                invoked--;            
+        }
+    }
+    
+    public void invoke(){
+        Marco marco = new Marco();
+        String name = (String)this.memory.get(++this.pc);
+        marco.setName(name);
+        this.pc++;
+        
+        /*Se utiliza el delimitador null para posteriormente
+        poder agregar los parametros al marco */
+        while (this.memory.get(this.pc) != null) {            
+            if (this.memory.get(this.pc) instanceof String) {
+                if (((String)(this.memory.get(this.pc))).equals("Limite")) {
+                    Object parameter = this.stack.pop();
+                    marco.addParameter(parameter);
+                    this.pc++;
+                }
+            }else{
+                executeInstruction(this.pc);
+            }
+        }
+        marco.setRetorno(pc);
+        this.stackMarcos.add(marco);
+        executeFunction((int)table.found(name)); /*Aqui es donde vamos */
+    }
+    
+    private void push_Parameter(){
+        int id = (int)this.memory.get(++this.pc);
+        this.stack.push(this.stackMarcos.lastElement().getParameter(id - 1));
+    }
 }

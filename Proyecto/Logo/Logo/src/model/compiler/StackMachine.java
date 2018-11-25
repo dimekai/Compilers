@@ -73,10 +73,52 @@ public class StackMachine {
     }
     
      /*
-    ||==================================================||
-    ||  MACHINE EXECUTE FOLLOWS FUNCTIONS ON THE STACK  ||
-    ||==================================================||
+    ||=====================================================||
+    ||  MACHINE EXECUTES FOLLOWING FUNCTIONS ON THE STACK  ||
+    ||=====================================================||
     */
+    private void add(){
+        Object matrixA = stack.pop();
+        Object matrixB = stack.pop();
+        
+        stack.push( (double)matrixA + (double)matrixB );
+    }
     
+    private void sub(){
+        Object matrixA = stack.pop();
+        Object matrixB = stack.pop();
+        
+        stack.push( (double)matrixA - (double)matrixB );
+    }
     
+    private void mult(){
+        Object matrixA = stack.pop();
+        Object matrixB = stack.pop();
+        
+        stack.push( (double)matrixA * (double)matrixB );
+    }
+    
+    private void negative(){
+        Object matrixA = stack.pop();
+        System.out.println(matrixA);
+        stack.push(-(double)matrixA);
+    }
+    
+    private void constPush(){
+        stack.push(memory.get(++pc));
+    }
+    
+    private void varPush(){
+        stack.push(memory.get(++pc));
+    }
+    
+    private void varPush_eval(){
+        stack.push(table.found((String)memory.get(++pc)));
+    }
+    
+    public void asign(){
+        String variable = (String)stack.pop();
+        Object object = stack.pop();
+        table.insert(variable, object);
+    }
 }

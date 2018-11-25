@@ -63,7 +63,7 @@ public class Initialize {
     public String toString() {
         String value = "";
         for (int i = 0; i < this.lines.size(); i++)
-            valor += this.lines.get(i) + ", ";
+            value += this.lines.get(i) + ", ";
 
         value += "X : " + this.X + " Y : " + this.Y + " Angle : " + this.angle;
 

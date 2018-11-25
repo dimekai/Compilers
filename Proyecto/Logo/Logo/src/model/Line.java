@@ -3,7 +3,7 @@ package model;
 /* Dependencies */
 import java.awt.Color;
 
-public class Linea {
+public class Line {
 
     private int Xi;
     private int Yi;
@@ -12,7 +12,7 @@ public class Linea {
     private Color color;
 
     /* Constructor */
-    public Linea(int Xi, int Yi, int Xf, int Yf, Color color) {
+    public Line(int Xi, int Yi, int Xf, int Yf, Color color) {
         this.Xi = Xi;
         this.Yi = Yi;
         this.Xf = Xf;

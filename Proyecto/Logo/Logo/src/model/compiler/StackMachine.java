@@ -72,7 +72,7 @@ public class StackMachine {
         return position;
     }
     
-     /*
+    /*
     ||=====================================================||
     ||  MACHINE EXECUTES FOLLOWING FUNCTIONS ON THE STACK  ||
     ||=====================================================||
@@ -121,4 +121,46 @@ public class StackMachine {
         Object object = stack.pop();
         table.insert(variable, object);
     }
+    
+    /*
+    ||=========================||
+    ||  CONDITIONAL OPERATORS  ||
+    ||=========================||
+    */
+    private void EQ(){
+        Object B = stack.pop();
+        Object A = stack.pop();
+        stack.push( (double)A == (double)B );
+    }
+    
+    private void NEQ(){
+        Object B = stack.pop();
+        Object A = stack.pop();
+        stack.push( (double)A != (double)B );
+    }
+    
+    private void LT(){
+        Object B = stack.pop();
+        Object A = stack.pop();
+        stack.push( (double)A < (double)B );
+    }
+    
+    private void GT(){
+        Object B = stack.pop();
+        Object A = stack.pop();
+        stack.push( (double)A > (double)B );
+    }
+    
+    private void LET(){
+        Object B = stack.pop();
+        Object A = stack.pop();
+        stack.push( (double)A <= (double)B );
+    }
+    
+    private void GET(){
+        Object B = stack.pop();
+        Object A = stack.pop();
+        stack.push( (double)A >= (double)B );
+    }
+    
 }

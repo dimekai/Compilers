@@ -16,7 +16,7 @@ public class StackMachine {
     private Stack<Marco> stackMarcos;
     private TableSymbols table;
     private Initialize currentConfig;
-    private boolean returning = false;
+    private boolean _return = false;
     private boolean STOP = false;
     
     public StackMachine(TableSymbols table){
@@ -168,7 +168,6 @@ public class StackMachine {
     ||    LOGICAL OPERATORS    ||
     ||=========================||
     */
-    
     private void negate(){
         Object A = this.stack.pop();
         this.stack.push(! (boolean)A);
@@ -186,4 +185,86 @@ public class StackMachine {
         this.stack.push( (boolean)A || (boolean)B );
     }
     
+    /*
+    ||==================================||
+    ||   METHODS WHICH EXECUTE CODING   ||
+    ||==================================||
+    */
+    public void printMemory(){
+        for(int i = 0; i < this.memory.size(); i++)
+            System.out.println(i + ": " + this.memory.get(i));
+    }
+    
+    public void executeInstruction(int index){
+        try {
+            Object objectRead = this.memory.get(index);
+            if (objectRead instanceof Method) {
+                Method method = (Method)objectRead;
+                method.invoke(this, (Object) null);
+            }
+            if (objectRead instanceof Function) {
+                ArrayList parameters = new ArrayList<>();
+                Function function = (Function)objectRead;
+                this.pc++;
+                /*Se usa null como un delimitador
+                Se agregan los parametros al marco*/
+                while(this.memory.get(this.pc) != null){
+                    if (this.memory.get(this.pc) instanceof String){
+                        if (((String)(this.memory.get(this.pc))).equals("Limite")) {
+                            Object parameter = this.stack.pop();
+                            parameters.add(parameter);
+                            this.pc++;
+                        }
+                    }else{
+                        executeInstruction(this.pc);
+                    }
+                }
+                function.execute(this.currentConfig, parameters);
+            }
+            this.pc++;
+        } catch (Exception e) {
+            System.out.println("Error to execute the instruction in "+ index);
+            System.out.println(e.getCause());
+        }
+    }
+    
+    public void execute(){
+        /*printMemory();*/
+        this.STOP = false;
+        while(this.pc < this.memory.size())
+            executeInstruction(this.pc);
+    
+    }
+    
+    public boolean executeNext(){
+        /*printMemory();*/
+        if (this.pc < this.memory.size()) {
+            executeInstruction(pc);
+            return true;
+        }
+        return false;
+    }
+    
+    public void execute(int index){
+        /*Ejecuta hasta encontrar un STOP*/
+        this.pc = index;
+        while(!this.STOP && !this._return)
+            executeInstruction(pc);
+        this.STOP = false;
+    }
+    
+    public void executeFunction(int index){
+        this.pc = index;
+        while(!this._return && this.memory.get(this.pc) != null)
+            executeInstruction(this.pc);
+        
+        this._return = false;
+        this.pc = this.stackMarcos.lastElement().getRetorno();
+        this.stackMarcos.removeElement(this.stackMarcos.lastElement());
+    }
+    
+    public Initialize getConfiguration(){
+        return this.currentConfig;
+    }    
+   
 }

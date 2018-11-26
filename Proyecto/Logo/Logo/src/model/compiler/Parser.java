@@ -409,6 +409,35 @@ public class Parser {
         "exp : PARAMETRO",
         "exp : nombreProc '(' arglist ')'",
         
+        "arglist :",
+        "arglist : exp",
+        "arglist : arglist ',' exp",
+        
+        "nop :",
+        "stmt : if_ '(' exp stop_ ')' '{' linea stop_ '}' ELSE '{' linea stop_ '}'",
+        "stmt : if_ '(' exp stop_ ')' '{' linea stop_ '}' nop stop_",
+        "stmt : while_ '(' exp stop_ ')' '{' linea stop_ '}' stop_",
+        "stmt : for_ '(' instrucciones stop_ ';' exp stop_ ';' instrucciones stop_ ')' '{' linea stop_ '}' stop_",
+        "stmt : funcion nombreProc '(' ')' '{' linea null_ '}'",
+        "stmt : procedimiento nombreProc '(' ')' '{' linea null_ '}'",
+        "stmt : instruccion '[' arglist ']' ';'",
+        
+        "instruccion : FNCT",
+        "procedimiento : PROC",
+        "funcion : FUNC",
+        "nombreProc : VAR",
+        "null_ :",
+        "stop_ :",
+        "if_ : IF",
+        "while_ : WHILE",
+        "for_ : FOR",
+        "instrucciones :",
+        "instrucciones : exp",
+        "instrucciones : instrucciones ',' exp",
         
     };
+    
+    //#line 221 "P2.y"
+    
+    
 }

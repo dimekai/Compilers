@@ -596,7 +596,7 @@ public class Parser {
     public Initialize executeCode(String code){
         this.st = new StringTokenizer(adjustString(code));
         this.new_line = false;
-        //yyparse();
+        yyparse();
         if (!this.there_was_an_error) 
             this.machine.execute();
         return this.machine.getConfiguration();
@@ -611,7 +611,7 @@ public class Parser {
     public boolean compile(String code){
         this.st = new StringTokenizer(adjustString(code));
         this.new_line = false;
-        //yyparse();
+        yyparse();
         return !this.there_was_an_error;
     }
     
@@ -644,7 +644,7 @@ public class Parser {
             this.st = new StringTokenizer(this.instruction);
             this.new_line = false;
             //this.machine = new StackMachine(tableSymbols);
-            //yyparse();
+            yyparse();
             if (!this.there_was_an_error)
                 this.machine.execute();
         }
@@ -664,6 +664,496 @@ public class Parser {
         debug("state "+state+", reading "+ch+" ("+s+")");
     }
     
+    //The following are now global, to aid in error reporting
+    int yyn;       //next next thing to do
+    int yym;       //
+    int yystate;   //current parsing state from state table
+    String yys;    //current token string
     
+    //###############################################################
+    // method: yyparse : parse input and execute indicated items
+    //###############################################################
+    int yyparse(){
+        boolean im_famous = true;
+        boolean do_action;
+        init_stacks();
+        this.yynerrs = 0;
+        this.yyerrflag = 0;
+        this.yychar = -1;       //impossible char forces a read
+        this.yystate = 0;       //initial state
+        
+        state_push(this.yystate);
+        val_push(this.yyval);
+        
+        while(im_famous){       //until parsing is done, either correctly, or w/error
+            do_action = true;
+            if (this.yydebug)   debug("loop");
+            //#### NEXT ACTION (from reduction table)
+            for (yyn = yydefred[yystate];yyn==0;yyn=yydefred[yystate]){
+                if (yydebug) debug("yyn:"+yyn+"  state:"+yystate+"  yychar:"+yychar);
+                if (yychar < 0) {      //we want a char?
+                    yychar = yylex();  //get next token
+                    if (yydebug) debug(" next yychar:"+yychar);
+                    //#### ERROR CHECK ####
+                    if (yychar < 0) {   //it it didn't work/error
+                        yychar = 0;     //change it to default string (no -1!)
+                        if (yydebug)
+                            yylexdebug(yystate,yychar);
+                    }
+                }//yychar<0
+                yyn = yysindex[yystate];  //get amount to shift by (shift index)
+
+                if ((yyn != 0) && (yyn += yychar) >= 0 &&
+                     yyn <= YYTABLESIZE && yycheck[yyn] == yychar) {
+                    if (yydebug)
+                        debug("state "+yystate+", shifting to state "+yytable[yyn]);
+                    //#### NEXT STATE ####
+                    yystate = yytable[yyn];//we are in a new state
+                    state_push(yystate);   //save it
+                    val_push(yylval);      //push our lval as the input for next rule
+                    yychar = -1;           //since we have 'eaten' a token, say we need another
+                    if (yyerrflag > 0)     //have we recovered an error?
+                        --yyerrflag;        //give ourselves credit
+                    do_action=false;        //but don't process yet
+                    break;   //quit the yyn=0 loop
+                }
+                yyn = yyrindex[yystate];  //reduce
+                if ((yyn !=0 ) && (yyn += yychar) >= 0 &&
+                     yyn <= YYTABLESIZE && yycheck[yyn] == yychar) {   //we reduced!
+                    if (yydebug) debug("reduce");
+                    yyn = yytable[yyn];
+                    do_action=true; //get ready to execute
+                    break;         //drop down to actions
+                } else { //ERROR RECOVERY
+                    if (yyerrflag==0) {
+                        yyerror("syntax error");
+                        yynerrs++;
+                    }
+                    if (yyerrflag < 3){ //low error count?
+                        yyerrflag = 3;
+                        while (true){   //do until break
+                            if (stateptr<0){   //check for under & overflow here
+                                yyerror("stack underflow. aborting...");  //note lower case 's'
+                                return 1;
+                            }
+                            yyn = yysindex[state_peek(0)];
+                            if ((yyn != 0) && (yyn += YYERRCODE) >= 0 &&
+                                    yyn <= YYTABLESIZE && yycheck[yyn] == YYERRCODE) {
+                                if (yydebug)
+                                    debug("state "+state_peek(0)+", error recovery shifting to state "+yytable[yyn]+" ");
+                                yystate = yytable[yyn];
+                                state_push(yystate);
+                                val_push(yylval);
+                                do_action=false;
+                                break;
+                            } else {
+                                if (yydebug)
+                                    debug("error recovery discarding state "+state_peek(0)+" ");
+                                if (stateptr<0){   //check for under & overflow here
+                                    yyerror("Stack underflow. aborting...");  //capital 'S'
+                                    return 1;
+                                }
+                                state_pop();
+                                val_pop();
+                            }
+                        }
+                    } else {            //discard this token
+                        if (yychar == 0)
+                            return 1; //yyabort
+                        if (yydebug) {
+                            yys = null;
+                            if (yychar <= YYMAXTOKEN) yys = yyname[yychar];
+                            if (yys == null) yys = "illegal-symbol";
+                            debug("state "+yystate+", error recovery discards token "+yychar+" ("+yys+")");
+                        }
+                        yychar = -1;  //read another
+                    }
+                }//end error recovery
+            }//yyn=0 loop
+            if (!do_action)     //any reason not to proceed?
+                continue;       //skip action
+            yym = yylen[yyn];          //get count of terminals on rhs
+            if (yydebug)
+                debug("state "+yystate+", reducing "+yym+" by rule "+yyn+" ("+yyrule[yyn]+")");
+            if (yym > 0)                 //if count of rhs not 'nil'
+                yyval = val_peek(yym-1); //get current semantic value
+            yyval = dup_yyval(yyval);    //duplicate yyval if ParserVal is used as semantic value
+            
+            switch(yyn){
+                //########## USER-SUPPLIED ACTIONS ##########
+                case 4:
+                    //#line 49 "P2.y"
+                    {yyval = val_peek(1);}
+                    break;
+                case 5:
+                    //#line 50 "P2.y"
+                    {yyval = val_peek(0);}
+                    break;
+                case 6:
+                    //#line 51 "P2.y"
+                    {yyval = val_peek(2);}
+                    break;
+                case 7:
+                    //#line 52 "P2.y"
+                    {yyval = val_peek(1);}
+                    break;
+                case 8:
+                    //#line 55 "P2.y"
+                    {
+                        yyval = new ParserVal(machine.aggregateOperation("varPush_eval"));
+                        machine.aggregate(val_peek(0).sval);
+                    }
+                    break;
+                case 9:
+                    //#line 59 "P2.y"
+                    {
+                        System.out.println("Negative");
+                        yyval = new ParserVal(machine.aggregateOperation("negative"));
+                    }
+                    break;
+                case 10:
+                    //#line 62 "P2.y"
+                    {
+                        yyval = new ParserVal(machine.aggregateOperation("constPush"));
+                        machine.aggregate(val_peek(0).dval);
+                    }
+                    break;
+                case 11:
+                    //#line 66 "P2.y"
+                    {
+                        yyval = new ParserVal(val_peek(0).ival);
+			machine.aggregateOperation("varPush");
+		        machine.aggregate(val_peek(2).sval);
+		        machine.aggregateOperation("asign");
+		        machine.aggregateOperation("varPush_eval"); 
+			machine.aggregate(val_peek(2).sval);
+                    }
+                    break;
+                case 12:
+                    //#line 74 "P2.y"
+                    {
+                        yyval = new ParserVal(val_peek(2).ival);
+                        machine.aggregateOperation("mult");
+                    }
+                    break;
+                case 13:
+                    //#line 78 "P2.y"
+                    {
+                        yyval = new ParserVal(val_peek(2).ival);
+                        machine.aggregateOperation("add");
+                    }
+                    break;
+                case 14:
+                    //#line 82 "P2.y"
+                    {
+                        yyval = new ParserVal(val_peek(2).ival);
+                        machine.aggregateOperation("sub");
+                    }
+                    break;
+                case 15:
+                    //#line 86 "P2.y"
+                    {
+                        yyval = new ParserVal(val_peek(1).ival);
+                    }
+                    break;
+                case 16:
+                    //#line 89 "P2.y"
+                    {
+                        machine.aggregateOperation("EQ");
+                        yyval = val_peek(2);
+                    }
+                    break;
+                case 17:
+                    //#line 93 "P2.y"
+                    {
+                        machine.aggregateOperation("NEQ");
+                        yyval = val_peek(2);
+                    }
+                    break;
+                case 18:
+                    //#line 97 "P2.y"
+                    {
+                        machine.aggregateOperation("LT");
+                        yyval = val_peek(2);
+                    }
+                    break;
+                case 19:
+                    //#line 101 "P2.y"
+                    {
+                        machine.aggregateOperation("LET");
+                        yyval = val_peek(2);
+                    }
+                    break;
+                case 20:
+                    //#line 105 "P2.y"
+                    {
+                        machine.aggregateOperation("GT");
+                        yyval = val_peek(2);
+                    }
+                    break;
+                case 21:
+                    //#line 109 "P2.y"
+                    {
+                        machine.aggregateOperation("GET");
+                        yyval = val_peek(2);
+                    }
+                    break;
+                case 22:
+                    //#line 113 "P2.y"
+                    {
+                        machine.aggregateOperation("AND");
+                        yyval = val_peek(2);
+                    }
+                    break;
+                case 23:
+                    //#line 117 "P2.y"
+                    {
+                        machine.aggregateOperation("OR");
+                        yyval = val_peek(2);
+                    }
+                    break;
+                case 24:
+                    //#line 121 "P2.y"
+                    {
+                        machine.aggregateOperation("negate");
+                        yyval = val_peek(0);
+                    }
+                    break;
+                case 25:
+                    //#line 125 "P2.y"
+                    { 
+                        yyval = val_peek(0); 
+                        machine.aggregateOperation("_return"); 
+                    }
+                    break;
+                case 26:
+                    //#line 127 "P2.y"
+                    { 
+                        yyval = new ParserVal(machine.aggregateOperation("push_Parameter")); machine.aggregate((int)val_peek(0).ival); 
+                    }
+                    break;
+                case 27:
+                    //#line 129 "P2.y"
+                    { 
+                        yyval = new ParserVal(machine.aggregateOperationIn("invoke",(val_peek(3).ival))); machine.aggregate(null); 
+                    }
+                    break;
+                case 29:
+                    //#line 133 "P2.y"
+                    {
+                        yyval = val_peek(0); machine.aggregate("Limite");
+                    }
+                    break;
+                case 30:
+                    //#line 134 "P2.y"
+                    {
+                        yyval = val_peek(2); machine.aggregate("Limite");
+                    }
+                    break;
+                case 31:
+                    //#line 137 "P2.y"
+                    {
+                        yyval = new ParserVal(machine.aggregateOperation("nop"));
+                    }
+                    break;
+                case 32:
+                    //#line 140 "P2.y"
+                    {
+                        yyval = val_peek(13);
+                        machine.aggregate(val_peek(7).ival, val_peek(13).ival + 1);
+                        machine.aggregate(val_peek(2).ival, val_peek(13).ival + 2);
+                        machine.aggregate(machine.numberOfElements()- 1, val_peek(13).ival + 3);
+                    }
+                    break;
+                case 33:
+                    //#line 146 "P2.y"
+                    {
+                        yyval = val_peek(10);
+                        machine.aggregate(val_peek(4).ival, val_peek(10).ival + 1);
+                        machine.aggregate(val_peek(1).ival, val_peek(10).ival + 2);
+                        machine.aggregate(machine.numberOfElements()- 1, val_peek(10).ival + 3);
+                    }
+                    break;
+                case 34:
+                    //#line 152 "P2.y"
+                    {
+                        yyval = val_peek(9);
+                        machine.aggregate(val_peek(3).ival, val_peek(9).ival + 1);
+                        machine.aggregate(val_peek(0).ival, val_peek(9).ival + 2);
+                    }
+                    break;
+                case 35:
+                    //#line 157 "P2.y"
+                    {
+                        yyval = val_peek(15);
+                        machine.aggregate(val_peek(10).ival, val_peek(15).ival + 1);
+                        machine.aggregate(val_peek(7).ival , val_peek(15).ival + 2);
+                        machine.aggregate(val_peek(3).ival , val_peek(15).ival + 3);
+                        machine.aggregate(val_peek(0).ival , val_peek(15).ival + 4);
+                    }
+                    break;
+                case 38:
+                    //#line 166 "P2.y"
+                    { 
+                        yyval = new ParserVal(val_peek(4).ival);
+                        machine.aggregate(null);
+                    }
+                    break;
+                case 39:
+                    //#line 171 "P2.y"
+                    {
+                        yyval = new ParserVal(machine.aggregate((Function)(val_peek(0).obj)));
+                    }
+                    break;
+                case 40:
+                    //#line 176 "P2.y"
+                    { 
+                        machine.aggregateOperation("statement"); 
+                    }
+                    break;
+                case 41:
+                    //#line 178 "P2.y"
+                    { 
+                        machine.aggregateOperation("statement"); 
+                    }
+                    break;
+                case 42:
+                    //#line 181 "P2.y"
+                    {
+                        yyval = new ParserVal(machine.aggregate(val_peek(0).sval));
+                    }
+                    break;
+                case 43:
+                    //#line 184 "P2.y"
+                    {
+                        machine.aggregate(null);
+                    }
+                    break;
+                case 44:
+                    //#line 187 "P2.y"
+                    {
+                        yyval = new ParserVal(machine.aggregateOperation("stop"));
+                    }
+                    break;    
+                case 45:
+                    //#line 190 "P2.y"
+                    {
+                        yyval = new ParserVal(machine.aggregateOperation("if_then_else"));
+                        machine.aggregateOperation("stop"); /*then*/
+                        machine.aggregateOperation("stop"); /*else*/
+                        machine.aggregateOperation("stop"); /*siguiente comando*/
+                    }
+                    break;
+                case 46:
+                    //#line 198 "P2.y"
+                    {
+                        yyval = new ParserVal(machine.aggregateOperation("_while"));
+                        machine.aggregateOperation("stop"); /*cuerpo*/
+                        machine.aggregateOperation("stop"); /*final*/
+                    }
+                    break;
+                case 47:
+                    //#line 205 "P2.y"
+                    {
+                        yyval = new ParserVal(machine.aggregateOperation("_for"));
+                        machine.aggregateOperation("stop"); /*condicion*/
+                        machine.aggregateOperation("stop"); /*instrucción final*/
+                        machine.aggregateOperation("stop"); /*cuerpo*/
+                        machine.aggregateOperation("stop"); /*final*/
+                    }
+                    break;
+                case 48:
+                    //#line 213 "P2.y"
+                    { 
+                        yyval = new ParserVal(machine.aggregateOperation("nop"));
+                    }
+                    break;
+                case 49:
+                    //#line 214 "P2.y"
+                    {
+                        yyval = val_peek(0);
+                    }
+                    break;
+                case 50:
+                    //#line 215 "P2.y"
+                    {
+                        yyval = val_peek(2);
+                    }
+                    break;    
+                //#line 969 "Parser.java"
+                //########## END OF USER-SUPPLIED ACTIONS ##########
+            }//switch
+            //#### Now let's reduce... ####
+            if (yydebug) debug("reduce");
+            state_drop(yym);                //we just reduced yylen states
+            yystate = state_peek(0);        //get new state
+            val_drop(yym);                  //corresponding value drop
+            yym = yylhs[yyn];               //select next TERMINAL(on lhs)
+            if (yystate == 0 && yym == 0){   //done? 'rest' state and at first TERMINAL
+                if (yydebug) 
+                    debug("After reduction, shifting from state 0 to state "+YYFINAL+"");
+                yystate = YYFINAL;         //explicitly say we're done
+                state_push(YYFINAL);       //and save it
+                val_push(yyval);           //also save the semantic value of parsing
+                if (yychar < 0) {          //we want another character?
+                    yychar = yylex();      //get next character
+                    if (yychar<0) 
+                        yychar=0;          //clean, if necessary
+                    if (yydebug)
+                        yylexdebug(yystate,yychar);
+                }
+                if (yychar == 0)          //Good exit (if lex returns 0 ;-)
+                    break;                //quit the loop--all DONE
+            }//if yystate
+            else                         //else not done yet
+            {                            //get next state and push, for next yydefred[]
+                yyn = yygindex[yym];     //find out where to go
+                if ((yyn != 0) && (yyn += yystate) >= 0 &&
+                     yyn <= YYTABLESIZE && yycheck[yyn] == yystate)
+                    yystate = yytable[yyn]; //get new state
+                else
+                    yystate = yydgoto[yym]; //else go to new defred
+                if (yydebug) 
+                    debug("after reduction, shifting from state "+state_peek(0)+" to state "+yystate+"");
+                state_push(yystate);     //going again, so push state & val...
+                val_push(yyval);         //for next action
+            }
+        }//main loop
+        return 0; //yyaccept!!
+    }
+    //## end of method parse() ######################################
     
+    //## run() --- for Thread #######################################
+    /**
+     * A default run method, used for operating this parser
+     * object in the background.  It is intended for extending Thread
+     * or implementing Runnable.  Turn off with -Jnorun .
+     */
+    public void run(){
+        yyparse();
+    }
+    
+    //## end of method run() ########################################
+
+    //## Constructors ###############################################
+    /**
+     * Default constructor.  Turn off with -Jnoconstruct .
+     */
+    public Parser() {   /*nothing to do*/    }
+
+    /**
+     * Create a parser, setting the debug to true or false.
+     * @param debugMe true for debugging, false for no debug.
+     */
+    public Parser(boolean debugMe){
+        this.yydebug=debugMe;
+    }
+    //###############################################################
+
+    public static void main(String args[]) throws Exception{
+        Parser par = new Parser(false);
+        par.dotest();
+    }
+
 }
+//################### END OF CLASS ##############################

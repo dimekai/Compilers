@@ -587,7 +587,83 @@ public class Parser {
     }
     
     /*======== FUNCTIONS OF LOGO ==========*/
-    public void insertInstruction(){
+    public void insertInstructions(){
         tableSymbols.insert("turn", new StackMachine.turn());
+        tableSymbols.insert("goForward", new StackMachine.goForward());
+        tableSymbols.insert("changeColor", new StackMachine.changeColor());
     }
+    
+    public Initialize executeCode(String code){
+        this.st = new StringTokenizer(adjustString(code));
+        this.new_line = false;
+        //yyparse();
+        if (!this.there_was_an_error) 
+            this.machine.execute();
+        return this.machine.getConfiguration();
+    }
+    
+    public Initialize execute(){
+        this.machine.execute();
+        return this.machine.getConfiguration();
+    }
+    
+    /* Agregar al .y */
+    public boolean compile(String code){
+        this.st = new StringTokenizer(adjustString(code));
+        this.new_line = false;
+        //yyparse();
+        return !this.there_was_an_error;
+    }
+    
+    public boolean executeNext(){
+        return this.machine.executeNext();
+    }
+    
+    public Initialize getConfiguration(){
+        return this.machine.getConfiguration();
+    }
+    
+    public void clear(){
+        this.tableSymbols = new TableSymbols();
+        insertInstructions();
+        this.machine = new StackMachine(tableSymbols);
+    }
+    
+    void dotest() throws Exception{
+        boolean she_doesnt_love_you = true;
+        insertInstructions();
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        while(she_doesnt_love_you){
+            this.there_was_an_error = false;
+            try {
+                this.instruction = adjustString(in.readLine());
+            } catch (Exception e) {
+                System.out.println("There was an error to read");
+                System.out.println(e.getCause());
+            }
+            this.st = new StringTokenizer(this.instruction);
+            this.new_line = false;
+            //this.machine = new StackMachine(tableSymbols);
+            //yyparse();
+            if (!this.there_was_an_error)
+                this.machine.execute();
+        }
+    }
+    
+    //#line 551 "Parser.java"
+    //###############################################################
+    // method: yylexdebug : check lexer state
+    //###############################################################
+    void yylexdebug(int state,int ch){
+        String s=null;
+        if (ch < 0) ch=0;
+        if (ch <= this.YYMAXTOKEN)   //check index bounds
+            s = this.yyname[ch];     //now get it
+        if (s==null)
+            s = "illegal-symbol";
+        debug("state "+state+", reading "+ch+" ("+s+")");
+    }
+    
+    
+    
 }

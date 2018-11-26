@@ -438,6 +438,156 @@ public class Parser {
     };
     
     //#line 221 "P2.y"
+    TableSymbols tableSymbols = new TableSymbols();
+    StackMachine machine = new StackMachine(this.tableSymbols);
+    int i = 0;
+    int j = 0;
+    double [][] auxiliar;
+    Function function_aux;
+    boolean there_was_an_error;
+    boolean new_line;
+    String instruction;
+    String reservados[] = {">=", "<=", "==", "!=",">", "<",
+                           "&&", "||", "!", "|", "=", ";",
+                           "+", "-", "*", ",",
+                           "[", "]", "{", "}", "(", ")"
+                        };
+    StringTokenizer st;
     
     
+    void yyerror(String s){
+        this.there_was_an_error = true;
+        System.out.println("There was an error : " + s);
+    }
+    
+    boolean isVariable(String str){
+        boolean is = true;
+        for (int k = 0; k < this.reservados.length; k++)
+            if (str.equals(this.reservados[i]))
+                is = false;
+        
+        return is;       
+    }
+        
+    int yylex(){
+        String s;
+        int token = 0;
+        Double d;
+        if (!this.st.hasMoreTokens()) {
+            if (!this.new_line) {
+                this.new_line = true;
+                return '\n';        //So we look like classic YACC example
+            }else
+                return 0;
+        }
+        s = this.st.nextToken();
+        try {
+            d = Double.valueOf(s);      /* Esto puede fallar */
+            this.yyval = new ParserVal(d.doubleValue());    /*See below*/
+            return Parser.NUMBER;
+        } catch (Exception e) {
+            System.out.println("There was an error in yylval");
+            System.out.println(e.getCause());
+        }
+        if (isVariable(s)) {
+            if (s.equals("proc")) 
+                return Parser.PROC;
+            
+            if (s.charAt(0) == '$'){
+                this.yylval = new ParserVal((int)Integer.parseInt(s.substring(1)));
+                return Parser.PARAMETRO;
+            }
+            
+            if (s.equals("return"))
+                return Parser.RETURN;
+            
+            if (s.equals("func"))
+                return Parser.FUNC;
+            
+            if (s.equals("if"))
+                return Parser.IF;
+            
+            if (s.equals("else"))
+                return Parser.ELSE;
+            
+            if (s.equals("while"))
+                return Parser.WHILE;
+            
+            if (s.equals("for"))
+                return Parser.FOR;
+            
+            boolean isFunction = false;
+            Object object = tableSymbols.found(s);
+            if (object instanceof Function) {
+                this.function_aux = (Function)object;
+                this.yylval = new ParserVal(object);
+                isFunction = true;
+                return Parser.FNCT;
+            }
+            if (!isFunction) {
+                this.yylval = new ParserVal(s);
+                return Parser.VAR;
+            }
+        }else{
+            if (s.equals("=="))
+                return Parser.EQ;
+            
+            if (s.equals("!="))
+                return Parser.NEQ;
+            
+            if (s.equals(">="))
+                return Parser.GET;
+            
+            if (s.equals("<="))
+                return Parser.LET;
+            
+            if (s.equals(">"))
+                return Parser.GT;
+            
+            if (s.equals("<"))
+                return Parser.LT;
+            
+            if (s.equals("||"))
+                return Parser.OR;
+            
+            if (s.equals("&&"))
+                return Parser.AND;
+            
+            token = s.charAt(0);
+        }  
+        return token;
+    }
+    
+    public String adjustString(String str){
+        String new_str = "";
+        boolean founded = false;
+        
+        for (int k = 0; k < str.length(); k++) {
+            founded = false;
+            for (int l = 0; l < this.reservados.length; l++) {
+                if (str.substring(k, k + this.reservados[l].length()).equals(this.reservados[l])) {
+                    k += this.reservados[l].length() - 1;
+                    new_str += " " + this.reservados[j] + " ";
+                    founded = true;
+                    break;
+                }
+            }
+            if (!founded) 
+                new_str += str.charAt(k);
+        }
+        if (str.length() > 0) {
+            char last_char = str.charAt(str.length() - 1);
+            if (last_char == ';' || last_char == '}') 
+                new_str += " " + last_char + " ";
+            else
+                new_str += str.charAt(str.length() - 1);
+        }
+        //System.out.println(new_str);
+        return new_str;
+    }
+    
+    /*======== FUNCTIONS OF LOGO ==========*/
+    public void insertInstruction(){
+        tableSymbols.insert("turn", new StackMachine.turn());
+    }
 }

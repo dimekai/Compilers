@@ -9,7 +9,7 @@ public class Marco {
     private int retorno;
     
     public Marco(){
-        this.parameters = new ArrayList<>();
+        this.parameters = new ArrayList();
         this.name = null;
         this.retorno = 0;
     }

@@ -1,13 +1,12 @@
 package model.compiler;
 
 import java.util.ArrayList;
-import java.util.Vector;
 
 public class TableSymbols {
     ArrayList<Symbol> Symbols;
 
     public TableSymbols() {
-        this.Symbols = new ArrayList<>();
+        this.Symbols = new ArrayList<Symbol>();
     }
 
     public Object found(String name) {
@@ -19,12 +18,13 @@ public class TableSymbols {
     }
 
     public boolean insert(String name, Object object) {
+        Symbol symb = new Symbol(name, name);
         for (int i = 0; i < this.Symbols.size(); i++)
             if (name.equals(this.Symbols.get(i).getName())) {
                 this.Symbols.get(i).setObject(object);
                 return true;
             }
-        this.Symbols.add(new Symbol(name, object));
+        this.Symbols.add(symb);
         return false;
     }
     

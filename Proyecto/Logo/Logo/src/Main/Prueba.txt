@@ -1,0 +1,3 @@
+goForward[100];
+turn[90];
+changeColor[255,0,0];

@@ -1,6 +1,5 @@
 package model;
 
-/* Dependencies */
 import java.awt.Color;
 
 public class Line {

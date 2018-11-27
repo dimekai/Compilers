@@ -20,9 +20,9 @@ public class StackMachine {
     private boolean STOP = false;
     
     public StackMachine(TableSymbols table){
-        this.memory = new ArrayList<>();
-        this.stack = new Stack<>();
-        this.stackMarcos = new Stack<>();
+        this.memory = new ArrayList<Method>();
+        this.stack = new Stack();
+        this.stackMarcos = new Stack();
         this.currentConfig = new Initialize();
         this.pc = 0;
         this.table = table;
@@ -130,7 +130,7 @@ public class StackMachine {
     private void EQ(){
         Object B = this.stack.pop();
         Object A = this.stack.pop();
-       this.stack.push( (double)A == (double)B );
+       this.stack.push( (boolean)((double)A == (double)B) );
     }
     
     private void NEQ(){
@@ -169,8 +169,7 @@ public class StackMachine {
     ||=========================||
     */
     private void negate(){
-        Object A = this.stack.pop();
-        this.stack.push(! (boolean)A);
+        this.stack.push(! (boolean)this.stack.pop());
     }
     
     private void AND(){
@@ -200,10 +199,10 @@ public class StackMachine {
             Object objectRead = this.memory.get(index);
             if (objectRead instanceof Method) {
                 Method method = (Method)objectRead;
-                method.invoke(this, (Object) null);
+                method.invoke(this, null);
             }
             if (objectRead instanceof Function) {
-                ArrayList parameters = new ArrayList<>();
+                ArrayList parameters = new ArrayList();
                 Function function = (Function)objectRead;
                 this.pc++;
                 /*Se usa null como un delimitador
@@ -249,15 +248,15 @@ public class StackMachine {
         /*Ejecuta hasta encontrar un STOP*/
         this.pc = index;
         while(!this.STOP && !this._return)
-            executeInstruction(pc);
+            executeInstruction(this.pc);
         this.STOP = false;
     }
     
     public void executeFunction(int index){
         this.pc = index;
-        while(!this._return && this.memory.get(this.pc) != null)
+        while(!this._return && this.memory.get(this.pc) != null){
             executeInstruction(this.pc);
-        
+        }
         this._return = false;
         this.pc = this.stackMarcos.lastElement().getRetorno();
         this.stackMarcos.removeElement(this.stackMarcos.lastElement());
@@ -341,12 +340,14 @@ public class StackMachine {
         instruccion después de la declaracion */
         while(this.memory.get(this.pc) != null || invoked != 0){
             if (this.memory.get(this.pc) instanceof Method)
-                if (((Method)this.memory.get(this.pc)).getName().endsWith("invocar")) 
+                if (((Method)this.memory.get(this.pc)).getName().equals("invocar")) 
                     invoked++;
             if (this.memory.get(this.pc) instanceof Function)
                 invoked++;
             if (this.memory.get(this.pc) == null)
-                invoked--;            
+                invoked--;
+            
+            this.pc++;
         }
     }
     
@@ -369,7 +370,7 @@ public class StackMachine {
                 executeInstruction(this.pc);
             }
         }
-        marco.setRetorno(pc);
+        marco.setRetorno(this.pc);
         this.stackMarcos.add(marco);
         executeFunction((int)table.found(name)); /*Aqui es donde vamos */
     }
@@ -390,7 +391,7 @@ public class StackMachine {
         @Override
         public void execute(Object A, ArrayList parameters) {
             Initialize config = (Initialize)A;
-            int angle = ( config.getAngle() + (int)(double)parameters.get(0))%RADIAN;
+            int angle = ( config.getAngle() + (int)(double)parameters.get(0))%360;
             config.setAngle(angle);
         }        
     }
@@ -419,9 +420,9 @@ public class StackMachine {
         @Override
         public void execute(Object A, ArrayList parameters) {
             Initialize config = (Initialize)A;
-            config.setColor(new Color((int)(double)parameters.get(0)%RGB, 
-                                      (int)(double)parameters.get(1)%RGB, 
-                                      (int)(double)parameters.get(2)%RGB)
+            config.setColor(new Color((int)(double)parameters.get(0)%256, 
+                                      (int)(double)parameters.get(1)%256, 
+                                      (int)(double)parameters.get(2)%256)
                             );
         }    
     }

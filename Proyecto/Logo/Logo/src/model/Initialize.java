@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class Initialize {
 
-    private ArrayList<Line> lines;
+    private ArrayList<Line> lineas;
     private Color color;
     private double X;
     private double Y;
@@ -14,12 +14,12 @@ public class Initialize {
     public Initialize() {
         this.X = 0.0; // Coordenadas
         this.Y = 0.0; // de origen
-        this.lines = new ArrayList<>();
+        this.lineas = new ArrayList<Line>();
         this.color = Color.WHITE;
     }
 
     public void addLine(Line line) {
-        this.lines.add(line);
+        this.lineas.add(line);
     }
 
     public void setPosition(double X, double Y) {
@@ -28,11 +28,11 @@ public class Initialize {
     }
 
     public void clear() {
-        this.lines.clear();
+        this.lineas.clear();
     }
 
     public ArrayList<Line> getLines() {
-        return this.lines;
+        return this.lineas;
     }
 
     public double getX() {
@@ -62,8 +62,8 @@ public class Initialize {
     @Override
     public String toString() {
         String value = "";
-        for (int i = 0; i < this.lines.size(); i++)
-            value += this.lines.get(i) + ", ";
+        for (int i = 0; i < this.lineas.size(); i++)
+            value += this.lineas.get(i) + ", ";
 
         value += "X : " + this.X + " Y : " + this.Y + " Angle : " + this.angle;
 

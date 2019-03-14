@@ -1,0 +1,142 @@
+//ESPIRAL CON RECURSIVIDAD
+procedure recur(){
+   if($1<2){
+	  FORWARD[$1*20];
+	}
+   else{
+	  FORWARD[$1*20];
+	  TURN[90];
+	  recur($1-1);
+   }
+}
+COLOR[0,0,0];
+FORWARD[-200];
+TURN[270];
+FORWARD[200];
+COLOR[255,255,255];
+TURN[90];
+recur(20);
+
+//CUADRADOS CON RECURSIVIDAD
+procedure cuadrado(){
+   for(i=0; i<4; i=i+1){
+    FORWARD[$1];
+    TURN[90];
+   }
+TURN[90];
+}
+procedure cuadrados(){
+   if($1 < 10 ){
+    cuadrado($1);   
+   }
+   else{
+    cuadrado($1);
+    cuadrados($1-10);
+   }
+}
+
+cuadrados(200);
+
+
+/*arbolito 2*/
+
+procedure tree(){
+ if($1>5){
+  FORWARD[$1];
+  TURN[20];
+  tree($1-15);
+  TURN[320];
+  tree($1-15);
+  TURN[20];
+  FORWARD[(-1)*($1)];
+ }
+}
+
+TURN[90];
+COLOR[0,0,0];
+TURN[180];
+FORWARD[200];
+TURN[180];
+COLOR[255,255,255];
+tree(100);
+
+/*ARBOLITO 3*/
+procedure tree(){
+ if($1>5){
+  FORWARD[$1];
+  TURN[20];
+  tree($1-5);
+  TURN[320];
+  tree($1-5);
+  TURN[20];
+  FORWARD[(-1)*($1)];
+ }
+}
+
+TURN[90];
+COLOR[0,0,0];
+TURN[180];
+FORWARD[200];
+TURN[180];
+COLOR[255,255,255];
+tree(60);
+
+/*Arbol de colores*/
+procedure tree(){
+ if($1>5){
+  FORWARD[$1];
+  TURN[20];
+COLOR[$1*10,$1*20,$1*30];
+  tree($1-5);
+  TURN[320];
+COLOR[$1*20,$1*30,$1*10];
+  tree($1-5);
+  TURN[20];
+COLOR[$1*30,$1*10,$1*20];
+  FORWARD[(-1)*($1)];
+ }
+}
+
+TURN[90];
+COLOR[0,0,0];
+TURN[180];
+FORWARD[200];
+TURN[180];
+COLOR[255,255,255];
+tree(60);
+
+
+
+
+//figuras del 3 - 7
+for(i = 0; i < 3; i = i + 1)
+{
+	FORWARD[100];
+	TURN[120];
+}
+for(i = 0; i < 4; i = i + 1)
+{
+	FORWARD[100];
+	TURN[90];
+}
+
+for(i = 0; i < 5; i = i + 1)
+{
+	FORWARD[100];
+	TURN[72];
+}
+for(i = 0; i < 6; i = i + 1)
+{
+	FORWARD[100];
+	TURN[60];
+}
+for(i = 0; i < 7; i = i + 1)
+{
+	FORWARD[100];
+	TURN[52];
+}
+for(i = 0; i < 8; i = i + 1)
+{
+	FORWARD[100];
+	TURN[45];
+}

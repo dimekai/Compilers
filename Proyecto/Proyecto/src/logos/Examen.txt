@@ -1,0 +1,156 @@
+//Figuras con n
+for(i = 0; i < 3; i = i + 1)
+{
+	FORWARD[100];
+	TURN[120];
+}
+
+for(i = 0; i < 4; i = i + 1)
+{
+	FORWARD[100];
+	TURN[90];
+}
+
+for(i = 0; i < 5; i = i + 1)
+{
+	FORWARD[100];
+	TURN[72];
+}
+for(i = 0; i < 6; i = i + 1)
+{
+	FORWARD[100];
+	TURN[60];
+}
+for(i = 0; i < 7; i = i + 1)
+{
+	FORWARD[100];
+	TURN[52];
+}
+for(i = 0; i < 8; i = i + 1)
+{
+	FORWARD[100];
+	TURN[45];
+}
+
+for(i = 0; i < 9; i = i + 1)
+{
+	FORWARD[100];
+	TURN[40];
+}
+
+for(i = 0; i < 10; i = i + 1)
+{
+	FORWARD[80];
+	TURN[36];
+}
+
+//Cuadrados
+procedure recur(){
+   if($1<2){
+	  FORWARD[$1*20];
+	}
+   else{
+	  FORWARD[$1*20];
+	  TURN[90];
+	  recur($1-1);
+   }
+}
+COLOR[0,0,0];
+FORWARD[-200];
+TURN[270];
+FORWARD[200];
+COLOR[255,255,255];
+TURN[90];
+recur(20);
+
+
+//Regla
+procedure seccion(){
+    TURN[90];
+    FORWARD[100];
+    TURN[180];
+    FORWARD[100];
+	TURN[90];
+	FORWARD[50];
+	TURN[90];
+	FORWARD[50];
+	TURN[180];
+	FORWARD[50];
+	TURN[90];
+	FORWARD[50];
+}
+TURN[180];
+FORWARD[250];
+TURN[180];
+COLOR[255,0,255];
+seccion();
+seccion();
+seccion();
+seccion();
+seccion();
+TURN[90];
+FORWARD[100];
+
+//Espirografo 1
+for(i=0;i<200;i=i+1){
+   COLOR[0, i*26, i*51];
+   FORWARD[i*4];
+   TURN[145];
+}
+
+//Espirografo 2
+procedure circulo(){
+for(i=0; i<366; i=i+1){
+    FORWARD[2];
+    TURN[1];
+}
+}
+procedure espirografo(){
+for(j=0; j<45; j=j+1){
+COLOR[j*30,j*40,j*20];
+circulo();
+TURN[90];
+}
+}
+espirografo(); 
+
+//Arbol
+procedure tree(){
+ if($1>5){
+  FORWARD[$1];
+  TURN[20];
+  tree($1-15);
+  TURN[320];
+  tree($1-15);
+  TURN[20];
+  FORWARD[(-1)*($1)];
+ }
+}
+
+TURN[90];
+COLOR[0,0,0];
+TURN[180];
+FORWARD[200];
+TURN[180];
+COLOR[0,255,0];
+tree(100);
+
+//Hilbert
+procedure hilbert(){
+    if($1==0){
+       return 0;
+	}
+    TURN[$2];
+    hilbert($1 - 1, -$2);
+    FORWARD[10];
+    TURN[-$2];
+    hilbert($1 - 1, $2);
+    FORWARD[10];
+    hilbert($1 - 1, $2);
+    TURN[-$2];
+    FORWARD[10];
+    hilbert($1 - 1, -$2);
+    TURN[$2];
+    
+}
+hilbert(5,90);

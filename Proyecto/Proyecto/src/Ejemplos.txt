@@ -1,0 +1,110 @@
+//INSTRUCCIONES BÁSICAS
+FORWARD[100];
+TURN[90];
+COLOR[255,0,0];
+FORWARD[100];
+TURN[90];
+COLOR[0,255,0];
+FORWARD[100];
+TURN[90];
+COLOR[0,0,255];
+FORWARD[100];
+TURN[90];
+
+
+//CICLOS-ESTRELLA DE COLORES
+for(i=0;i<130;i=i+1){
+   COLOR[i*13, i*26, i*51];
+   FORWARD[i*5];
+   TURN[150];
+}
+
+//CICLOS-ESPIRAL
+for(i=0;i<200;i=i+1){
+   COLOR[0, i*26, i*51];
+   FORWARD[i*4];
+   TURN[145];
+}
+
+//PROCEDIMIENTOS
+procedure cuadro(){
+   for(Auxiliar=0;Auxiliar<4;Auxiliar=Auxiliar+1){
+      FORWARD[100];
+      TURN[90];
+   }
+}
+for(i=0; i< 360; i=i+1){
+cuadro();
+TURN[1];
+}
+
+//PRUEBA CON funciones
+function potencia () {
+    retorno = 1;
+    for(aux=0; aux<$2; aux=aux+1){
+        retorno = retorno*$1;
+    }
+    return retorno;
+}
+for(i=0; i<24; i=i+1){
+    FORWARD[potencia(i,2)];
+    COLOR[
+      5*potencia(i,1),
+      5*potencia(i,2),
+      5*potencia(i,3)
+   ];
+    TURN[90];
+}
+
+PROCEDIMIENTOS ANIDADOS
+procedure circulo(){
+   for(aux=0; aux<360; aux=aux+1){
+      COLOR[$1,$2,$3];
+      FORWARD[2];
+      TURN[1];
+   }
+}
+procedure flor(){
+   for(i=0;i<8;i=i+1){
+      circulo((i+1)*30, (i+1)*32, (i+1)*60);
+      TURN[45];
+   }
+}
+flor();
+
+
+procedure estrella() {
+    for (i = 0; i < 300; i=i+1){
+        TURN[-90 * i];        
+        FORWARD[400];
+        TURN[90 * i];        
+        FORWARD[20];
+        TURN[-90 * i];
+        TURN[1];
+    }
+}
+estrella();
+
+
+procedure patron() {
+    TURN[-90];
+    for (i = 0; i < 22; i = i + 1) {
+        TURN[-90];
+        COLOR[0, 255, 255];
+        FORWARD[110 - (i * 10)];
+        TURN[-90];
+        COLOR[255, 255, 51];
+        FORWARD[i * 10];    
+    }
+}
+patron();
+
+// Con <=100 se ve bien
+procedure squiral() {
+    TURN[-90];
+    for (i = 0; i < 250; i = i + 1) {
+        FORWARD[i * 2];
+        TURN[-91];
+    }
+}
+squiral();
